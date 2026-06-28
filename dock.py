@@ -6,7 +6,7 @@ RDLogger.DisableLog("rdApp.*")
 from core import main
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Pharmacophore-based ligand docking")
-    parser.add_argument("--serial", action="store_true",help="disable multiprocessing (easier to debug)")
+    parser = argparse.ArgumentParser(description="Pharmacophore based ligand docking")
+    parser.add_argument("--serial", action="store_true",help="disable multiprocessing")
     args = parser.parse_args()
     main(force_serial=args.serial)

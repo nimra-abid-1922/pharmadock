@@ -22,7 +22,7 @@ from config import (
     SITE_FAM_TO_RDKIT,
 )
 
-_feat_factory = None  # re-parsing BaseFeatures.fdef on every molecule call adds measurable overhead at scale.
+_feat_factory = None  #re-parsing BaseFeatures.fdef on every molecule call adds measurable overhead at scale
 
 
 def feat_factory():
@@ -78,7 +78,7 @@ def kabsch(source, target):
     H = (source - sc).T @ (target - tc)
     U, _, Vt = np.linalg.svd(H)
     det = np.linalg.det(Vt.T @ U.T)
-    # det flips the sign to avoid a reflection when the point sets are mirror images
+    #det flips the sign to avoid a reflection when the point sets are mirror images
     R = Vt.T @ np.diag([1.0, 1.0, det]) @ U.T
     t = tc - sc @ R.T
     return R, t
@@ -125,7 +125,7 @@ def side_atoms(mol, a, b):
 def rotatable_torsions(mol):
     patt = Chem.MolFromSmarts("[!$(*#*)&!D1]-!@[!$(*#*)&!D1]")
     torsions = []
-    seen_bonds = set()  # the SMARTS pattern returns each bond twice, once per direction
+    seen_bonds = set() #the SMARTS pattern returns each bond twice, once per direction
     for a, b in mol.GetSubstructMatches(patt):
         bond_key = (min(a, b), max(a, b))
         if bond_key in seen_bonds:
@@ -134,7 +134,7 @@ def rotatable_torsions(mol):
         moving = side_atoms(mol, a, b)
         if len(moving) > mol.GetNumAtoms() - len(moving):
             a, b = b, a
-            moving = side_atoms(mol, a, b)  # always rotate the smaller fragment to keep the inner loop cheap
+            moving = side_atoms(mol, a, b) #always rotate the smaller fragment to keep the inner loop cheap
         torsions.append((a, b, np.array(moving)))
     return torsions[:MAX_TORSIONS]
 
@@ -180,7 +180,7 @@ def flexible_refine(base, torsions, sites, pharm_groups, excl_vols, rng):
         if cand_f < best_f:
             best_x, best_f = cand_x, cand_f
         if cand_f < cur_f or rng.random() < FLEX_ACCEPT_PROB:
-            cur_x, cur_f = cand_x, cand_f  # occasional uphill moves let the search escape local basins
+            cur_x, cur_f = cand_x, cand_f #occasional uphill moves let the search escape local basins
 
     return apply_torsions(base, best_x, torsions)
 
@@ -229,7 +229,7 @@ def triplet_seeds(raw, s_idx, a_idx, s_pos):
                        abs(d_site[j, k] - d_atom[j, k]))
                 tris.append((err, i, j, k))
         if len(tris) > MAX_ENUM:
-            break  # clique enumeration can explode on densely connected pair graphs
+            break #clique enumeration can explode on densely connected pair graphs
     if not tris:
         return []
 
@@ -304,7 +304,7 @@ def coordmap_candidates(mol_noh, sites, pharm_groups, excl_vols):
 
 
 def diverse_top_k(pool, k):
-    # top-K by score alone clusters around one region; RMSD filter spreads the refinement budget
+    #top-K by score alone clusters around one region; RMSD filter spreads the refinement budget
     if len(pool) <= k:
         return pool[:]
     candidates = pool[:DIVERSE_PRESELECT]
@@ -339,14 +339,14 @@ def embed_conformers(smiles):
     AllChem.EmbedMultipleConfs(mol, numConfs=n_confs, params=params)
 
     if mol.GetNumConformers() < 10:
-        # tight RMS pruning wipes out almost everything for rigid or small molecules so we retry with a looser threshold
+        #tight RMS pruning wipes out almost everything for rigid or small molecules so we retry with a looser threshold
         params = AllChem.ETKDGv3()
         params.randomSeed = 1
         params.pruneRmsThresh = PRUNE_RMS_LOOSE
         AllChem.EmbedMultipleConfs(mol, numConfs=max(n_confs, 100), params=params)
 
     if mol.GetNumConformers() < 2:
-        # last resort for molecules that fail distance geometry entirely
+        #last resort for molecules that fail distance geometry entirely
         params = AllChem.ETKDGv3()
         params.useRandomCoords = True
         params.randomSeed = 0
